@@ -62,8 +62,44 @@ Reduce:         Read in key-value pairs and run operation on them grouped by key
 
 In our case, the .seqpng files that we uploaded into HDFS already come in key-value form, so we'll only 
 use a mapper, which will read in the .seqpng's and apply the classifier to them. Seqpngs are binary sequential files
-where each line is ordered in the following fashion
+corresponding to individual scenes where each line is ordered into key-value pairs.
+
+and each of these lines corresponds to the mask, metadata, or individual band of the scene. In the mapper we reconstruct
+the image line-by-line from the .seqpng, and from there run the classifier on it. The classifier is run using the command:
 ```
-key	value
+$ ./run.sh /user/hduser/wheelTest/
 ```
 
+You should see something like the following being printed out:
+```
+Deleted hdfs://localhost:54310/user/hduser/wheelTestOutput/classifier
+packageJobJar: [../classifier/ClassifierMapper.py, ../classifier/../lib/NewImageScan/src/main/python/binaryhadoop.py, ../classifier/../lib/NewImageScan/src/main/python/utilities.py, ../classifier/FourClassTrainingSet.txt, ../classifier/classifierconfig, /app/hadoop/tmp/hadoop-unjar457409916355964329/] [] /tmp/streamjob6986399193070302753.jar tmpDir=null
+14/06/18 18:09:28 INFO mapred.FileInputFormat: Total input paths to process : 2
+14/06/18 18:09:28 INFO streaming.StreamJob: getLocalDirs(): [/app/hadoop/tmp/mapred/local]
+14/06/18 18:09:28 INFO streaming.StreamJob: Running job: job_201406041059_0199
+14/06/18 18:09:28 INFO streaming.StreamJob: To kill this job, run:
+14/06/18 18:09:28 INFO streaming.StreamJob: /usr/local/hadoop/libexec/../bin/hadoop job  -Dmapred.job.tracker=localhost:54311 -kill job_201406041059_0199
+14/06/18 18:09:28 INFO streaming.StreamJob: Tracking URL: http://localhost:50030/jobdetails.jsp?jobid=job_201406041059_0199
+14/06/18 18:09:29 INFO streaming.StreamJob:  map 0%  reduce 0%
+14/06/18 18:09:46 INFO streaming.StreamJob:  map 68%  reduce 0%
+14/06/18 18:09:49 INFO streaming.StreamJob:  map 78%  reduce 0%
+14/06/18 18:09:52 INFO streaming.StreamJob:  map 88%  reduce 0%
+14/06/18 18:09:55 INFO streaming.StreamJob:  map 98%  reduce 0%
+14/06/18 18:09:58 INFO streaming.StreamJob:  map 100%  reduce 0%
+14/06/18 18:14:46 INFO streaming.StreamJob:  map 100%  reduce 100%
+14/06/18 18:14:46 INFO streaming.StreamJob: Job complete: job_201406041059_0199
+14/06/18 18:14:46 INFO streaming.StreamJob: Output: /user/hduser/wheelTestOutput///classifier
+```
+In this example, the output for the job is simply a counter for the different terrain types labelled in the scene. Let's 
+check the output of the mapper by typing:
+```
+$ hadoop dfs -ls /user/hduser/wheelTestOutput/classifier/
+```
+You'll see that the output comes in separate files as 'part-*'. This corresponds to the output from each separate mapper - usually one for each file.
+You can look at the output for all the files with the command:
+```
+$ hadoop dfs -cat /user/hduser/wheelTestOutput/classifier/part*
+```
+
+There are the amounts of terrain of each type that your classifier found. By looking in the run.sh and ClassifierMapper.py files you can
+design your own analytics and plug them into the wheel! Happy rolling!
