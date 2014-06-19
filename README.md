@@ -19,7 +19,9 @@ $ su - hduser
 
 Ubuntu will then ask you for a password. In this case, the password is: Puppies
 
-Your home directory now holds all the files you need to use the wheel. Before we can do that, however, we need to boot 
+Once you're logged in, cd into the EO1-Wheel-Demo directory. 
+
+You now can see all the files you need to use the wheel. Before we can do that, however, we need to boot 
 up HDFS. In the terminal, type:
 ```
 $ /usr/local/hadoop/bin/start-all.sh
