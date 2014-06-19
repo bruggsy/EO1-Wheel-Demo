@@ -6,7 +6,7 @@
 # values to use in the scripted steps below
 local_work_dir=../EO1-Wheel-Demo
 # Hadoop streaming bug workaround
-libjar_dir=/home/hduser/matsu-project/analyticwheel.jobs/lib/PutToAccumulo/target
+#libjar_dir=lib/PutToAccumulo/target
 # HDFS cache used to pass around files
 CACHE=hdfs://node:port
 
@@ -42,8 +42,8 @@ hadoop jar ${HADOOP_HOME}/contrib/streaming/hadoop-streaming-*.jar \
  -mapper ${local_work_dir}/ClassifierMapper.py \
  -reducer NONE \
  -file ${local_work_dir}/ClassifierMapper.py \
- -file ${local_work_dir}/../lib/NewImageScan/src/main/python/binaryhadoop.py \
- -file ${local_work_dir}/../lib/NewImageScan/src/main/python/utilities.py \
+ -file ${local_work_dir}/modules/binaryhadoop.py \
+ -file ${local_work_dir}/modules/utilities.py \
  -file ${local_work_dir}/FourClassTrainingSet.txt \
  -file ${local_work_dir}/classifierconfig
 

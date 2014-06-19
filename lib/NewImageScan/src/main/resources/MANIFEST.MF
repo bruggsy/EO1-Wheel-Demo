@@ -1,4 +1,0 @@
-Specification-Version: 1.0
-Implementation-Version: 1.0
-Specification-Vendor: Open Data Group
-Implementation-Vendor: Open Data Group
