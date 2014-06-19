@@ -4,7 +4,7 @@
 #START=$(date +%s)
 
 # values to use in the scripted steps below
-local_work_dir=../classifier
+local_work_dir=../EO1-Wheel-Demo
 # Hadoop streaming bug workaround
 libjar_dir=/home/hduser/matsu-project/analyticwheel.jobs/lib/PutToAccumulo/target
 # HDFS cache used to pass around files
