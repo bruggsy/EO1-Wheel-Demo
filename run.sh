@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # values to use in the scripted steps below
-local_work_dir=../EO1-Wheel-Demo
+local_work_dir=../EO1-Wheel-Mini
 
 # HDFS cache used to pass around files
 CACHE=hdfs://node:port
@@ -29,13 +29,13 @@ hadoop jar ${HADOOP_HOME}/contrib/streaming/hadoop-streaming-*.jar \
  -inputformat org.apache.hadoop.mapred.SequenceFileAsBinaryInputFormat \
  -input ${MR_INPUT} \
  -output ${analyzed_image_dir} \
- -mapper ${local_work_dir}/ClassifierMapper.py \
+ -mapper ${local_work_dir}/classifier/ClassifierMapper.py \
  -reducer NONE \
- -file ${local_work_dir}/ClassifierMapper.py \
+ -file ${local_work_dir}/classifier/ClassifierMapper.py \
  -file ${local_work_dir}/modules/binaryhadoop.py \
  -file ${local_work_dir}/modules/utilities.py \
- -file ${local_work_dir}/FourClassTrainingSet.txt \
- -file ${local_work_dir}/classifierconfig
+ -file ${local_work_dir}/classifier/FourClassTrainingSet.txt \
+ -file ${local_work_dir}/classifier/classifierconfig
 
 
 exit 0
