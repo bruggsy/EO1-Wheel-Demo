@@ -496,36 +496,6 @@ def svmTest(clf,bandArray):
 
 # Unused, creates RGB array from classified image
 
-def makegeoJSON(classImg,metadata):
-    geoJSON = {}
-    geoJSON["type"] = "Feature"
-    coords = metadata['registration']
-    order = ['top-left','top-middle','top-right','middle-right','bottom-right','bottom-middle','bottom-left','middle-left','top-left']
-    geoJSON["geometry"] = {}
-    geoJSON["geometry"]["type"] = "Polygon"
-    polygon = []
-    for corner in order:
-        try:
-            sys.stderr.write(corner+'\n')
-            lat = coords[corner]['lat']
-            lon = coords[corner]['lng']
-            polygon.append([lat,lon])
-        except KeyError:
-            sys.stderr.write('Missing coordinate for ' + corner + '... exiting \n')
-            pass
-    geoJSON["properties"] = {}
-    geoJSON["geometry"]["coordinates"] = [polygon]
-    geoJSON['properties']['classification'] = classImg.tolist()
-    geoJSON['properties']['metadata'] = metadata
-    try:
-        regionKey = imageData["metadata"]["originalDirName"]
-    except KeyError:
-        regionKey = imageData["metadata"]["outputFile"]
-
-    #binaryhadoop.emit(sys.stdout,regionKey,geoJSON,encoding=binaryhadoop.TYPEDBYTES_JSON)
-    print Counter(classImg)
-    pass
-
 def makeGeoTrans(metadata,shape):
 
     epsgNum = getEPSG(metadata)
@@ -563,7 +533,7 @@ def makeGeoTrans(metadata,shape):
     pixHeight = (origLat-refLat)/shape[1]
     pixWidth = (origLng-refLng)/shape[0]
 
-    geoTrans = [origLng, pixWidth, 0, origLat, 0, pixHeight]
+    geoTrans = [origLat, pixWidth, 0, origLng, 0, pixHeight]
     
     return geoTrans
 
@@ -598,12 +568,12 @@ def main(metadata,bandMask,bands,opts,rats):
     else:
         rKey = '2'
 
-    #rats = np.array([[3,7],[4,8]])
     bandArray,availBands = preProcess(l1tMeta,bands,rats)
     clf = setUpTrain('FourClassTrainingSet.txt',availBands,opts)
     sys.stderr.write("training set loaded \n")
 
     sys.stderr.write("Beginning classification \n")
+
 
     classImg = svmTest(clf,bandArray)
     classImg[~np.reshape(bandMask,bandMask.size)] = 0    # set mask values to 0

@@ -37,6 +37,7 @@ hadoop jar ${HADOOP_HOME}/contrib/streaming/hadoop-streaming-*.jar \
  -file ${local_work_dir}/classifier/FourClassTrainingSet.txt \
  -file ${local_work_dir}/classifier/classifierconfig
 
+./tiffMaker/wheelRead.sh ${analyzed_image_dir} classImgs/
 
 exit 0
 
