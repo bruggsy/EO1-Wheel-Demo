@@ -6,13 +6,18 @@ analytics over a dataset. For this demo, we'll show you how to run a
 simple support vector machine algorithm over the NASA EO1 dataset.
 
 The files contained in this demo are as follows:
-* ClassifierMapper.py: Mapper function for wheel streaming
+* classifier/: Directory containing files for classifier
+  * ClassifierMapper.py: Mapper function for wheel streaming
+  * classifierconfig: configuration file
+  * FourClassTrainingSet.txt: csv file containing training data
+* modules/: Diretory containing modules for binaryhadoop and reading sequence files
+* tiffMaker/: Directory containing files for creating GeoTiffs from wheel output
+  * wheelReader.sh: Reads and formats wheel output
+  * makeGeoTiff.py: Creates georeferenced GeoTiffs
+* testImage/: folder containing images for testing wheel
 * run.sh: shell script for running wheel
-* classifierconfig: configuration file
-* FourClassTrainingSet.txt: csv file containing training data
-* testImages/: folder containing images for testing wheel
-
 In order to use the HDFS system, you must be logged in as the hadoop user. In a separate terminal window, type in
+
 ```
 $ su - hduser
 ```
@@ -92,16 +97,20 @@ packageJobJar: [../classifier/ClassifierMapper.py, ../classifier/../lib/NewImage
 14/06/18 18:14:46 INFO streaming.StreamJob: Job complete: job_201406041059_0199
 14/06/18 18:14:46 INFO streaming.StreamJob: Output: /user/hduser/wheelTestOutput///classifier
 ```
-In this example, the output for the job is simply a counter for the different terrain types labelled in the scene. Let's 
+In this example, the output for the job is simply a JSON containing all the image and georeferencing information. Let's 
 check the output of the mapper by typing:
 ```
 $ hadoop dfs -ls /user/hduser/wheelTestOutput/classifier/
 ```
-You'll see that the output comes in separate files as 'part-*'. This corresponds to the output from each separate mapper - usually one for each file.
-You can look at the output for all the files with the command:
-```
-$ hadoop dfs -cat /user/hduser/wheelTestOutput/classifier/part*
-```
 
-There are the amounts of terrain of each type that your classifier found. By looking in the run.sh and ClassifierMapper.py files you can
-design your own analytics and plug them into the wheel! Happy rolling!
+You should see something like the following:
+```
+Found 3 items
+-rw-r--r--   1 hduser supergroup          0 2014-07-10 17:48 /user/hduser/wheelTestOutput/classifier/_SUCCESS
+drwxr-xr-x   - hduser supergroup          0 2014-07-10 17:42 /user/hduser/wheelTestOutput/classifier/_logs
+-rw-r--r--   1 hduser supergroup   34993316 2014-07-10 17:42 /user/hduser/wheelTestOutput/classifier/part-00000
+```
+The ```_SUCCESS``` file means that the job completed succesfully. The ```part-``` is your mapper output. You have one for each mapper that ran,
+in this case you should have two. The run script also converts these JSONs stored in HDFS to georeferenced GeoTiffs and PNGS. You can view
+these files in the newly created classImgs directory. Each scene has its own subdirectory. In each, you can see four files, two geoTiffs, a .png,
+ and a metadata file with the extension .xml. 
