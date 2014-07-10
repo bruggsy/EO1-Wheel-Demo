@@ -1,5 +1,0 @@
-classifier.kernel	rbf
-classifier.C	100
-classifier.gamma	.01
-ratio	3	7
-ratio	4	8
