@@ -16,6 +16,7 @@ The files contained in this demo are as follows:
   * makeGeoTiff.py: Creates georeferenced GeoTiffs
 * testImage/: folder containing images for testing wheel
 * run.sh: shell script for running wheel
+
 In order to use the HDFS system, you must be logged in as the hadoop user. In a separate terminal window, type in
 
 ```
