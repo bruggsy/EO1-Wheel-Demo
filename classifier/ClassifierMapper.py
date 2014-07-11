@@ -1,5 +1,42 @@
 #!/usr/bin/env python
 
+'''
+ABOUT:
+This Python program acts as a Mapper for a Hadoop mapreduce job.
+As input it takes in sequential png files - a binary sequence file containing
+key-value pairs that correspond to an EO-1 scene. 
+Output is a classified image - a training set is specified and 
+a SVM routine is used to classify the image into terrain types.
+Output format is a JSON containing the georeference information
+and classified image.
+
+DEPENDS:
+binaryhadoop
+utilities
+geoReference
+numpy
+gdal
+osr
+ogr
+sys
+json
+sklearn
+
+AUTHORS:
+Jake Bruggemann
+
+
+HISTORY:
+July 2014: Original script (beta).
+
+USE:
+For use on the Open Science Data Cloud public data commons as a mapper in a Hadoop mapreduce job.
+> python ClassifierMapper.py
+'''
+
+__author__ = "Jake Bruggemann"
+__version__ = 0.1
+
 # Irradiance correction for Hyperion data - for converting radiance to reflectance
 #
 # bands: dictionary of band radiances
@@ -438,8 +475,6 @@ def setUpTrain(trainName,availBands,opts={}):
         trainData = np.loadtxt(trainFile,skiprows=1,delimiter=",")
                 
         
-    #trainData = np.loadtxt(open(trainName),skiprows=1,delimiter=",")  #currently not using header. Maybe have to fix this? We'll have to think about it. 
-    
     hypBandsNum = np.array([['011','012','013','014','015','016'], 
                             ['009','010'],
                             ['018','019','020','021','022','023','024','025'],
@@ -494,64 +529,7 @@ def svmTest(clf,bandArray):
 
     return ans
 
-# Unused, creates RGB array from classified image
 
-def makeGeoTrans(metadata,shape):
-
-    epsgNum = getEPSG(metadata)
-
-    source = osr.SpatialReference()
-    source.ImportFromEPSG(4326)
-    
-    target = osr.SpatialReference()
-    target.ImportFromEPSG(int(epsgNum))
-    
-    botLeft = metadata['registration']['bottom-left']
-    upRight = metadata['registration']['top-right']
-    
-    blLat = botLeft['lat']
-    blLng = botLeft['lng']
-    urLat = upRight['lat']
-    urLng = upRight['lng']
-
-    transform = osr.CoordinateTransformation(source,target)
-
-    blPoint = ogr.CreateGeometryFromWkt("POINT ("+str(blLat)+ " " + str(blLng) +")")
-    urPoint = ogr.CreateGeometryFromWkt("POINT ("+str(urLat)+ " " + str(urLng) +")")
-
-    blPoint.Transform(transform)
-    urPoint.Transform(transform)
-
-    blTrans = blPoint.ExportToWkt().split(" ")
-    urTrans = urPoint.ExportToWkt().split(" ")
-
-    origLat = round(float(blTrans[1][1:]))
-    origLng = round(float(blTrans[2][0:-1]))
-    refLat = round(float(urTrans[1][1:]))+30.
-    refLng = round(float(urTrans[2][0:-1]))-30.
-
-    pixHeight = (origLat-refLat)/shape[1]
-    pixWidth = (origLng-refLng)/shape[0]
-
-    geoTrans = [origLat, pixWidth, 0, origLng, 0, pixHeight]
-    
-    return geoTrans
-
-def getEPSG(metadata):
-    projInfo = metadata['Projection']
-    epsgLine = projInfo.split('\n')[-1].split('"')
-    epsgNum = epsgLine[-2]
-    return epsgNum
-
-def getUTM(metadata):
-    projInfo = metadata['Projection'].split('\n')[0]
-    projSplit = projInfo.split(" ")
-    return projSplit[-2][0:-2]
-    
-def getWGS(metadata):
-    projInfo = metadata['Projection'].split('\n')[0]
-    projSplit = projInfo.split(" ")
-    return  int(projSplit[1])
 # main function , runs all preprocessing and testing
 #
 # metadata: L1T metadata dictionary
@@ -577,12 +555,13 @@ def main(metadata,bandMask,bands,opts,rats):
 
     classImg = svmTest(clf,bandArray)
     classImg[~np.reshape(bandMask,bandMask.size)] = 0    # set mask values to 0
+    classImg = np.reshape(classImg,shape+(1,))
 
     sys.stderr.write("Classification complete \n")
 
-    geoTrans = makeGeoTrans(metadata,shape)
-    utmNum = getUTM(metadata)
-    wgsNum = getWGS(metadata)
+    geoTrans = geoReference.makeGeoTrans(metadata,shape)
+    utmNum = geoReference.getUTM(metadata)
+    wgsNum = geoReference.getWGS(metadata)
 
     try:
         regionName = metadata["originalDirName"]
@@ -601,10 +580,9 @@ def main(metadata,bandMask,bands,opts,rats):
 
     print json.dumps(outData)
 
-
     pass
 
-## LOADING DATA ##
+
 
 if __name__=="__main__":
 
@@ -616,10 +594,11 @@ if __name__=="__main__":
     import numpy.ma as ma
     import time
     import gdal,osr,ogr
-    from collections import Counter
 
     import binaryhadoop     # Wheel modules
     import utilities
+    import geoReference
+
 
     imageData = {}
     imageData["metadata"] = None
@@ -659,19 +638,3 @@ if __name__=="__main__":
 
 
     main(imageData["metadata"],bandMask,bands,opts,rats)                       # call main
-    #outputData = {}
-    #sys.stderr.write("emiting classified data\n")    
-    #outputData['shape'] = bandMask.shape                 # Create outputData dictionary
-    #outputData['img'] = classImg.tolist()
-
-    #print Counter(classImg)
-    
-    #print region
-    #print imageData['bands'].values()
-    # Not sure if this is correct, or should just dump JSON with print
-    '''
-    outputData['key'] = regionKey
-    print json.dumps(outputData)
-    '''
-
-    #binaryhadoop.emit(sys.stdout,region,imageData,encoding=binaryhadoop.TYPEDBYTES_JSON)
