@@ -20,7 +20,7 @@
 # > ./run.sh /user/hduser/input/
 
 # values to use in the scripted steps below
-local_work_dir=../EO1-Wheel-Mini
+local_work_dir=../EO1-Wheel-Demo
 
 # HDFS cache used to pass around files
 CACHE=hdfs://node:port
