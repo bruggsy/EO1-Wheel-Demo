@@ -111,7 +111,23 @@ Found 3 items
 drwxr-xr-x   - hduser supergroup          0 2014-07-10 17:42 /user/hduser/wheelTestOutput/classifier/_logs
 -rw-r--r--   1 hduser supergroup   34993316 2014-07-10 17:42 /user/hduser/wheelTestOutput/classifier/part-00000
 ```
+
 The ```_SUCCESS``` file means that the job completed succesfully. The ```part-``` is your mapper output. You have one for each mapper that ran,
 in this case you should have two. The run script also converts these JSONs stored in HDFS to georeferenced GeoTiffs and PNGS. You can view
-these files in the newly created classImgs directory. Each scene has its own subdirectory. In each, you can see four files, two geoTiffs, a .png,
- and a metadata file with the extension .xml. 
+these files in the newly created classImgs directory. Each scene has its own subdirectory. In each, you can see three files, a GeoTiff, a .png,
+ and a metadata file for the .png with the extension .xml. You can check the geogreferencing information of any of the images by using gdalinfo:
+
+```
+gdalinfo <file>
+```
+
+Using this demo and looking at the example code, you can build your own analytics that create georeferenced geoTiffs and pngs. The simple requirements
+are that the MapReduce job produces a JSON with the following keys:
+* UTM : UTM zone number for the scene, see function ```getUTM``` in geoReference.py
+* geoTrans: Geo-Transformation vector, see function ```makeGeoTrans``` in geoReference.py
+* WGS : WGS world geodetic system version number, see function ```getWGS``` in geoReference.py
+* imgShape : Dimensions of scene image, numpy array in format ```[#rows, #columns]```
+* imgName : Scene ID, taken from metadata under key ```originalDirName```
+* img: Raster image created from, 2-D numpy array converted to list.
+
+Using this demo and the documentation for each function, hopefully you can create your own analytics and plug them into the wheel! Happy rolling!
