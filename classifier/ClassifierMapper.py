@@ -553,7 +553,8 @@ def main(metadata,bandMask,bands,opts,rats):
     sys.stderr.write("Beginning classification \n")
 
 
-    classImg = svmTest(clf,bandArray)
+    #classImg = svmTest(clf,bandArray)
+    classImg = np.zeros(bandMask.size)
     classImg[~np.reshape(bandMask,bandMask.size)] = 0    # set mask values to 0
     classImg = np.reshape(classImg,shape+(1,))
 
@@ -567,8 +568,10 @@ def main(metadata,bandMask,bands,opts,rats):
         regionName = metadata["originalDirName"]
     except KeyError:
         regionName = metadata["outputFile"]
-
-    sceneName = regionName[49:]
+    if len(bands) < 13:
+        sceneName = regionName[49:]
+    else:
+        sceneName = regionName[54:]
     
     outData = {}
     outData['UTM'] = utmNum
