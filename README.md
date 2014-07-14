@@ -2,8 +2,11 @@
 
 Hello! Welcome to the Open Science Data Cloud's demo on the Matsu Wheel.
 In this tutorial, we will show you how to use the OSDC wheel to run 
-analytics over a dataset. For this demo, we'll show you how to run a
-simple support vector machine algorithm over the NASA EO1 dataset.
+analytics over a dataset.  For this demo, we'll show you how to run a
+simple support vector machine algorithm over the NASA EO1 dataset. 
+
+Much of the code in this tutorial is derived from the OSDC EO1 Data Tutorial, which
+covers image classification without using a Hadoop system. It can be accessed [here](https://github.com/mtpatter/eo1-demo)
 
 The files contained in this demo are as follows:
 * classifier/: Directory containing files for classifier
