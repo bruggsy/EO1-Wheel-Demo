@@ -30,20 +30,20 @@ For example, make a two-band tiff from a JSON loaded into EO1A1930292014029110PZ
 __author__ = "Jake Bruggemann"
 __version__ = 0.1
 
-#Creates compessed tiff
+#Creates compressed tiff
 def compressTiff(imgData,dirName):
     base_name = str(dirName+imgData['imgName'])
-    subprocess.call(['gdal_translate','-co','compress=LZW',base_name+'.tiff',base_name+'_LZW.tiff'])
+    subprocess.call(['gdal_translate','-co','compress=LZW',base_name+'.tiff',base_name+'_CLASSIFIED_LZW.tiff'])
     pass
 
 def makePng(imgData,dirName):
     base_name = str(dirName+imgData['imgName'])
-    subprocess.call(['gdal_translate','-of','PNG','-ot','Byte','-scale','0','5000',base_name+'.tiff',base_name+'.png'])
+    subprocess.call(['gdal_translate','-of','PNG','-ot','Byte','-scale','0','5000',base_name+'.tiff',base_name+'_CLASSIFIED.png'])
     pass
 
 def createColorTiff(imgData,dirName,colorFile):
     base_name = str(dirName+imgData['imgName'])
-    subprocess.call(['gdaldem','color-relief','-alpha',base_name+'.tiff',colorFile,base_name+'_COLOR.tiff'])
+    subprocess.call(['gdaldem','color-relief','-alpha',base_name+'.tiff',colorFile,base_name+'_CLASSIFIED_COLOR.tiff'])
     pass
 
 def createGeoTiff(imgData,dirName,numRast):
@@ -56,7 +56,7 @@ def createGeoTiff(imgData,dirName,numRast):
         
         base_name = str(dirName+imgData['imgName'])
         
-        dst_ds = driver.Create(base_name+'.tiff',shape[1],shape[0],1,gdal.GDT_Byte)
+        dst_ds = driver.Create(base_name+'_CLASSIFIED.tiff',shape[1],shape[0],1,gdal.GDT_Byte)
         dst_ds.SetGeoTransform(imgData['geoTrans'])
         srs = osr.SpatialReference()
         
@@ -67,8 +67,8 @@ def createGeoTiff(imgData,dirName,numRast):
         dst_ds.SetProjection(srs.ExportToWkt())
         
         img = np.array([imgData['img']])
-        print shape
         img = np.reshape(img,shape+[1])  #Just to make sure array is 3-D with right shape
+
     except KeyError:
         print "Keys missing from JSON: Current keys are:"
         print imgData.keys()
@@ -113,7 +113,17 @@ if __name__=="__main__":
     subprocess.call(['mkdir','-p',dirName])
 
     SUCCESS = createGeoTiff(imgData,dirName,numRast)
-    if SUCCESS: #Can add png maker, compresser here
+
+################################################################################
+# 
+# Here you can add commands to make additional images. The default for this code
+# is to only have the createColorTiff command, but the .png maker or the compressed
+# .tiff maker can be added into the marked area.
+#
+################################################################################
+
+    if SUCCESS:
+        # Command to make additional images can be added here.
         if colorFile != None:
             createColorTiff(imgData,dirName,colorFile)
     pass

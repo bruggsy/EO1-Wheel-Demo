@@ -6,7 +6,8 @@ analytics over a dataset.  For this demo, we'll show you how to run a
 simple support vector machine algorithm over the NASA EO1 dataset. 
 
 Much of the code in this tutorial is derived from the OSDC EO1 Data Tutorial, which
-covers image classification without using a Hadoop system. It can be accessed [here](https://github.com/mtpatter/eo1-demo)
+covers a similar method ofimage classification, but without using a Hadoop system.
+It can be accessed [here](https://github.com/mtpatter/eo1-demo "EO1-Demo")
 
 The files contained in this demo are as follows:
 * classifier/: Directory containing files for classifier
@@ -74,8 +75,7 @@ Reduce:         Read in key-value pairs and run operation on them grouped by key
 In our case, the .seqpng files that we uploaded into HDFS already come in key-value form, so we'll only 
 use a mapper, which will read in the .seqpng's and apply the classifier to them. Seqpngs are binary sequential files
 corresponding to individual scenes where each line is ordered into key-value pairs.
-
-and each of these lines corresponds to the mask, metadata, or individual band of the scene. In the mapper we reconstruct
+The keys in these .seqpng's correspond to the mask, metadata, or individual band of the scene. In the mapper we reconstruct
 the image line-by-line from the .seqpng, and from there run the classifier on it. The classifier is run using the command:
 ```
 $ ./run.sh /user/hduser/wheelTest/
@@ -101,6 +101,22 @@ packageJobJar: [../classifier/ClassifierMapper.py, ../classifier/../lib/NewImage
 14/06/18 18:14:46 INFO streaming.StreamJob: Job complete: job_201406041059_0199
 14/06/18 18:14:46 INFO streaming.StreamJob: Output: /user/hduser/wheelTestOutput///classifier
 ```
+
+The classifier is built to be fault tolerant, and will issue warnings if some bands are missing from the dataset. These can be checked 
+in the hadoop logs. As hduser, cd into ```/usr/local/hadoop/logs/userlogs/```. If you ```ls``` here, you will see folders labelled similarily to
+```
+job_201406041059_0199
+```
+These correspond to the job ID's of the hadoop MR job you just ran. You can check the output stream for the ID of your specific job. In the folder
+for your job, you will see something like this:
+```
+attempt_201406231547_0168_m_000000_0  attempt_201406231547_0168_m_000001_0  attempt_201406231547_0168_m_000002_0  job-acls.xml
+```
+These correspond to the separate attempts to complete the map job on a separate file in  your data. Don't worry about how many there are exactly, 
+MapReduce sometimes takes a couple of attempts to complete successfully. Go into any one and open the file ```stderr``` to see information
+on your job. Here, you can see the bands that were read in, what ratios were used, and the scene ID of the scene the attempt correspond to. 
+
+Once you're confident your job ran as you wanted it to, it's time to check what you made. 
 In this example, the output for the job is simply a JSON containing all the image and georeferencing information. Let's 
 check the output of the mapper by typing:
 ```

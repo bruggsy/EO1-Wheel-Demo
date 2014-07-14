@@ -310,7 +310,7 @@ def binBands(bands,numPixels):
                             ['018','019','020','021','022','023','024','025'],
                             ['028','029','030','031','032','033'],
                             ['042','043','044','045'],
-                            ['049','050','051','052','053','71','72','73','74'],
+                            ['049','050','051','052','053','071','072','073','074'],
                             ['106','107','108','109','110','111','112','113','114','115'],
                             ['141','142','143','144','145','146','147','148','149','150',
                              '151','152','153','154','155','156','157','158','159','160'],
@@ -327,6 +327,7 @@ def binBands(bands,numPixels):
                 aliBand = aliBand+np.reshape(bands['B'+band],[numPixels,1])    #Add Hyperion bands
                 count += 1
             except KeyError:
+                sys.stderr.write('Band ' + band + ' not available, omitting \n')
                 count = count 
         if count != 0:         # If any of the Hyperion bands needed are present, add band to testing set
             key = 'B'+"{0:0=2d}".format(i+2)
@@ -384,12 +385,16 @@ def rescaleALI(metadata,bands):
     radianceScaling = metadata['RADIANCE_SCALING']
     bandScaling = np.zeros((1,len(bands)))
     bandOffset = np.zeros((1,len(bands)))
-    for key in bands.keys():
-        value = bands[key]
-        ind = int(key[1:])
-        bandScaling = float(radianceScaling['BAND' + str(ind)  + '_SCALING_FACTOR'])
-        bandOffset = float(radianceScaling['BAND' + str(ind) + '_OFFSET'])
-        bands[key] = (value*bandScaling)+bandOffset
+    bandOrder = ['B02','B03','B04','B05','B06','B07','B08','B09','B10']   
+    for key in bandOrder:
+        try:
+            value = bands[key]
+            ind = int(key[1:])
+            bandScaling = float(radianceScaling['BAND' + str(ind)  + '_SCALING_FACTOR'])
+            bandOffset = float(radianceScaling['BAND' + str(ind) + '_OFFSET'])
+            bands[key] = (value*bandScaling)+bandOffset
+        except KeyError:
+            sys.stderr.write('Missing band ' + key + ' omitting... \n')
 
     return bands
     
@@ -502,8 +507,6 @@ def setUpTrain(trainName,availBands,opts={}):
             numer = bandSplit[0]
             denom = bandSplit[1]
             if (numer in availBands) and (denom in availBands):
-                sys.stderr.write(numer+"\n")
-                sys.stderr.write(denom+"\n")
 
                 numerArr = np.reshape(trainSet[:,availBands.index(numer)],trainSet.shape[0])
                 denomArr = np.reshape(trainSet[:,availBands.index(denom)],trainSet.shape[0])
@@ -537,33 +540,6 @@ def svmTest(clf,bandArray):
 #
 # 
 def main(metadata,bandMask,bands,opts,rats):
-    coords = metadata['registration']
-    l1tMeta = metadata['L1T']['L1_METADATA_FILE']
-    shape = l1tMeta['imgShape']
-    '''Determine region here, we'll do it later! '''
-    if coords['middle-middle']['lat'] < 100:
-        rKey = '1'
-    else:
-        rKey = '2'
-
-    bandArray,availBands = preProcess(l1tMeta,bands,rats)
-    clf = setUpTrain('FourClassTrainingSet.txt',availBands,opts)
-    sys.stderr.write("training set loaded \n")
-
-    sys.stderr.write("Beginning classification \n")
-
-
-    #classImg = svmTest(clf,bandArray)
-    classImg = np.zeros(bandMask.size)
-    classImg[~np.reshape(bandMask,bandMask.size)] = 0    # set mask values to 0
-    classImg = np.reshape(classImg,shape+(1,))
-
-    sys.stderr.write("Classification complete \n")
-
-    geoTrans = geoReference.makeGeoTrans(metadata,shape)
-    utmNum = geoReference.getUTM(metadata)
-    wgsNum = geoReference.getWGS(metadata)
-
     try:
         regionName = metadata["originalDirName"]
     except KeyError:
@@ -572,6 +548,28 @@ def main(metadata,bandMask,bands,opts,rats):
         sceneName = regionName[49:]
     else:
         sceneName = regionName[54:]
+    sys.stderr.write('Scene ID: ' + sceneName + '\n')
+
+
+    l1tMeta = metadata['L1T']['L1_METADATA_FILE']
+    shape = l1tMeta['imgShape']
+
+    bandArray,availBands = preProcess(l1tMeta,bands,rats)
+    clf = setUpTrain('FourClassTrainingSet.txt',availBands,opts)
+    sys.stderr.write("training set loaded \n")
+
+    sys.stderr.write("Beginning classification \n")
+
+    classImg = np.zeros(bandMask.size)
+    #classImg = svmTest(clf,bandArray)
+    #classImg[~np.reshape(bandMask,bandMask.size)] = 0    # set mask values to 0
+    classImg = np.reshape(classImg,shape+(1,))
+
+    sys.stderr.write("Classification complete \n")
+
+    geoTrans = geoReference.makeGeoTrans(metadata,shape)
+    utmNum = geoReference.getUTM(metadata)
+    wgsNum = geoReference.getWGS(metadata)
     
     outData = {}
     outData['UTM'] = utmNum

@@ -4,6 +4,7 @@
 #ABOUT:
 #This shell script will read in the HDFS output from a wheel classification,
 #sort it into individual scenes, and then create geoTiffs with the classification.
+#The created images are saved into a local folder, indicated by OUT_DIR.
 
 #AUTHORS:
 #Jake Bruggemann
