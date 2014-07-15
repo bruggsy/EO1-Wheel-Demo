@@ -18,4 +18,6 @@ Contains configuration options for Support Vector Machine classifier. Options ar
 * classifier.kernel: kernel type to be used for algorithm. Can be one of: linear, poly, rbf, sigmoid, or precomputed. 
 * classifier.C: Penalty parameter C for the error term.
 * classifier.gamma: Kernel coefficient for rbf, poly and sigmoid. If gamma is 0.0 then 1/n_features will be used instead.
-* ratio: Ratio of ALI or approximate ALI bands to be used as further dimensions for SVM algorithm. Structure is as follows: ```ratio   numerator_band    denomination_band```
+* ratio: Ratio of ALI or approximate ALI bands to be used as further dimensions for SVM algorithm. Structure is as follows:
+
+ ```ratio   numerator_band    denomination_band```
