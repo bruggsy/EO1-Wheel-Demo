@@ -102,8 +102,8 @@ packageJobJar: [../classifier/ClassifierMapper.py, ../classifier/../lib/NewImage
 14/06/18 18:14:46 INFO streaming.StreamJob: Output: /user/hduser/wheelTestOutput///classifier
 ```
 
-The classifier is built to be fault tolerant, and will issue warnings if some bands are missing from the dataset. These can be checked 
-in the hadoop logs. As hduser, cd into ```/usr/local/hadoop/logs/userlogs/```. If you ```ls``` here, you will see folders labelled similarily to
+The classifier is built to be fault tolerant and automatically determine if each scene is ALI or Hyperion. It will issue warnings if some bands are missing from the dataset.
+ These can be checked in the hadoop logs. As hduser, cd into ```/usr/local/hadoop/logs/userlogs/```. If you ```ls``` here, you will see folders labelled similarily to
 ```
 job_201406041059_0199
 ```
@@ -133,8 +133,11 @@ drwxr-xr-x   - hduser supergroup          0 2014-07-10 17:42 /user/hduser/wheelT
 
 The ```_SUCCESS``` file means that the job completed succesfully. The ```part-``` is your mapper output. You have one for each mapper that ran,
 in this case you should have two. The run script also converts these JSONs stored in HDFS to georeferenced GeoTiffs and PNGS. You can view
-these files in the newly created classImgs directory. Each scene has its own subdirectory. In each, you can see three files, a GeoTiff, a .png,
- and a metadata file for the .png with the extension .xml. You can check the geogreferencing information of any of the images by using gdalinfo:
+these files in the newly created classImgs directory. Each scene has its own subdirectory. In each, you can see two files, both GeoTiffs. The one
+with the name ```SCENEID_CLASSIFIED.tiff``` is the classified GeoTiff, where each pixel has a value corresponding to its classified terrain type. 
+The one with the name ```SCENEID_CLASSIFIED_COLOR.tiff``` is a false color RGBA GeoTiff of the classified scene
+where each color corresponds to a certain terrain type.
+ You can check the geogreferencing information of any of the images by using gdalinfo:
 
 ```
 gdalinfo <file>
