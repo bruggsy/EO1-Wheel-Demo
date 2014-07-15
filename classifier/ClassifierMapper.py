@@ -560,9 +560,8 @@ def main(metadata,bandMask,bands,opts,rats):
 
     sys.stderr.write("Beginning classification \n")
 
-    classImg = np.zeros(bandMask.size)
-    #classImg = svmTest(clf,bandArray)
-    #classImg[~np.reshape(bandMask,bandMask.size)] = 0    # set mask values to 0
+    classImg = svmTest(clf,bandArray)
+    classImg[~np.reshape(bandMask,bandMask.size)] = 0    # set mask values to 0
     classImg = np.reshape(classImg,shape+(1,))
 
     sys.stderr.write("Classification complete \n")
