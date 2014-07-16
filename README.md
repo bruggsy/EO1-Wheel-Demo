@@ -13,7 +13,7 @@ The files contained in this demo are as follows:
 * classifier/: Directory containing files for classifier
   * ClassifierMapper.py: Mapper function for wheel streaming
   * classifierconfig: configuration file
-  * FourClassTrainingSet.txt: csv file containing training data
+  * FourClassTrainingSet.csv: csv file containing training data
 * modules/: Diretory containing modules for binaryhadoop and reading sequence files
 * tiffMaker/: Directory containing files for creating GeoTiffs from wheel output
   * wheelReader.sh: Reads and formats wheel output
