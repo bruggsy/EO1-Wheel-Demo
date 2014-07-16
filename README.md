@@ -6,8 +6,8 @@ analytics over a dataset.  For this demo, we'll show you how to run a
 simple support vector machine algorithm over the NASA EO1 dataset. 
 
 Much of the code in this tutorial is derived from the OSDC EO1 Data Tutorial, which
-covers a similar method ofimage classification, but without using a Hadoop system.
-It can be accessed [here](https://github.com/mtpatter/eo1-demo "EO1-Demo")
+covers a similar method of image classification, but without using a Hadoop system.
+It can be accessed [here](https://github.com/mtpatter/eo1-demo "EO1-Demo").
 
 The files contained in this demo are as follows:
 * classifier/: Directory containing files for classifier
@@ -58,7 +58,7 @@ $ hadoop dfs -ls /user/hduser/wheelTest/
 
 Hm, nothing in there. Let's put some files in it to test. In the terminal, type in:
 ```
-$ hadoop dfs -copyFromLocal testImages/* /user/hduser/wheelTest/
+$ hadoop dfs -copyFromLocal testImage/* /user/hduser/wheelTest/
 ```
 Check what's in the directory again, you should see the contents of testImages listed. Now we can run the wheel. 
 The wheel consists of a series of MapReduce jobs, where the necessary data is streamed through the jobs and the analytics are
