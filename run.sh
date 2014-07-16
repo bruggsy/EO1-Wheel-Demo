@@ -55,7 +55,7 @@ hadoop jar ${HADOOP_HOME}/contrib/streaming/hadoop-streaming-*.jar \
  -file ${local_work_dir}/modules/utilities.py \
  -file ${local_work_dir}/modules/geoReference.py \
  -file ${local_work_dir}/classifier/FourClassTrainingSet.csv \
- -file ${local_work_dir}/classifier/classifierconfig
+ -file ${local_work_dir}/classifier/classifierconfig.tsv
 
 
 

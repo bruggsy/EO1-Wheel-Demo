@@ -619,7 +619,7 @@ if __name__=="__main__":
     imageData['metadata']['svmOpts'] = {}
     imageData['bands'] = bands
     rats = []
-    with open("classifierconfig","r") as parameterFile:   # Load SVM configuration
+    with open("classifierconfig.tsv","r") as parameterFile:   # Load SVM configuration
         for line in parameterFile.readlines():
             line = line.rstrip().split("\t")
             if line[0] == "classifier.kernel":
