@@ -35,7 +35,7 @@ def makeGeoTrans(metadata,shape):
 
     origLat = round(float(blTrans[1][1:]))
     origLng = round(float(blTrans[2][0:-1]))
-    refLat = round(float(urTrans[1][1:]))+30.
+    refLat = round(float(urTrans[1][1:]))+30.  ## the 30 is hardcoded bc need to add bottom and right pixels and EO-1 has 30 meter pixels
     refLng = round(float(urTrans[2][0:-1]))-30.
 
     pixHeight = (origLat-refLat)/shape[1]
