@@ -30,8 +30,6 @@ mkdir -p tmp
 
 hadoop dfs -ls ${MR_OUTPUT}/part* > tmp/ls
 
-subLine=part
-
 for line in $(cat tmp/ls)
 do
     if [[ "$line" =~ "part" ]]; then
