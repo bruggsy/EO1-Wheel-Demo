@@ -13,7 +13,7 @@ The files contained in this demo are as follows:
 * classifier/: Directory containing files for classifier
   * ClassifierMapper.py: Mapper function for wheel streaming
   * classifierconfig: configuration file
-  * FourClassTrainingSet.txt: csv file containing training data
+  * FourClassTrainingSet.csv: csv file containing training data
 * modules/: Diretory containing modules for binaryhadoop and reading sequence files
 * tiffMaker/: Directory containing files for creating GeoTiffs from wheel output
   * wheelReader.sh: Reads and formats wheel output
@@ -84,7 +84,7 @@ $ ./run.sh /user/hduser/wheelTest/
 You should see something like the following being printed out:
 ```
 Deleted hdfs://localhost:54310/user/hduser/wheelTestOutput/classifier
-packageJobJar: [../classifier/ClassifierMapper.py, ../classifier/../lib/NewImageScan/src/main/python/binaryhadoop.py, ../classifier/../lib/NewImageScan/src/main/python/utilities.py, ../classifier/FourClassTrainingSet.txt, ../classifier/classifierconfig, /app/hadoop/tmp/hadoop-unjar457409916355964329/] [] /tmp/streamjob6986399193070302753.jar tmpDir=null
+packageJobJar: [../classifier/ClassifierMapper.py, ../classifier/../lib/NewImageScan/src/main/python/binaryhadoop.py, ../classifier/../lib/NewImageScan/src/main/python/utilities.py, ../classifier/FourClassTrainingSet.csv, ../classifier/classifierconfig, /app/hadoop/tmp/hadoop-unjar457409916355964329/] [] /tmp/streamjob6986399193070302753.jar tmpDir=null
 14/06/18 18:09:28 INFO mapred.FileInputFormat: Total input paths to process : 2
 14/06/18 18:09:28 INFO streaming.StreamJob: getLocalDirs(): [/app/hadoop/tmp/mapred/local]
 14/06/18 18:09:28 INFO streaming.StreamJob: Running job: job_201406041059_0199

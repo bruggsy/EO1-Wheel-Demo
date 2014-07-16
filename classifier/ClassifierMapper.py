@@ -555,7 +555,7 @@ def main(metadata,bandMask,bands,opts,rats):
     shape = l1tMeta['imgShape']
 
     bandArray,availBands = preProcess(l1tMeta,bands,rats)
-    clf = setUpTrain('FourClassTrainingSet.txt',availBands,opts)
+    clf = setUpTrain('FourClassTrainingSet.csv',availBands,opts)
     sys.stderr.write("training set loaded \n")
 
     sys.stderr.write("Beginning classification \n")
