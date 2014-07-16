@@ -60,7 +60,7 @@ Hm, nothing in there. Let's put some files in it to test. In the terminal, type 
 ```
 $ hadoop dfs -copyFromLocal testImage/* /user/hduser/wheelTest/
 ```
-Check what's in the directory again, you should see the contents of testImages listed. Now we can run the wheel. 
+Check what's in the directory again, you should see the contents of testImage listed. Now we can run the wheel. 
 The wheel consists of a series of MapReduce jobs, where the necessary data is streamed through the jobs and the analytics are
 spit out at the end, written into Accumulo. In our case, we only have one MapReduce job and are writing the results back into HDFS.
 
