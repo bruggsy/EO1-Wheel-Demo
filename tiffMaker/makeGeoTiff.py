@@ -33,17 +33,17 @@ __version__ = 0.1
 #Creates compressed tiff
 def compressTiff(imgData,dirName):
     base_name = str(dirName+imgData['imgName'])
-    subprocess.call(['gdal_translate','-co','compress=LZW',base_name+'.tiff',base_name+'_CLASSIFIED_LZW.tiff'])
+    subprocess.call(['gdal_translate','-co','compress=LZW',base_name+'_CLASSIFIED.tiff',base_name+'_CLASSIFIED_LZW.tiff'])
     pass
 
 def makePng(imgData,dirName):
     base_name = str(dirName+imgData['imgName'])
-    subprocess.call(['gdal_translate','-of','PNG','-ot','Byte','-scale','0','5000',base_name+'.tiff',base_name+'_CLASSIFIED.png'])
+    subprocess.call(['gdal_translate','-of','PNG','-ot','Byte','-scale','0','5000',base_name+'_CLASSIFIED.tiff',base_name+'_CLASSIFIED.png'])
     pass
 
 def createColorTiff(imgData,dirName,colorFile):
     base_name = str(dirName+imgData['imgName'])
-    subprocess.call(['gdaldem','color-relief','-alpha',base_name+'.tiff',colorFile,base_name+'_CLASSIFIED_COLOR.tiff'])
+    subprocess.call(['gdaldem','color-relief','-alpha',base_name+'_CLASSIFIED.tiff',colorFile,base_name+'_CLASSIFIED_COLOR.tiff'])
     pass
 
 def createGeoTiff(imgData,dirName,numRast):
