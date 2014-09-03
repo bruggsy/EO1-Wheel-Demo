@@ -320,8 +320,8 @@ def binBands(bands,numPixels):
     """
     # From http://eo1.usgs.gov/sensors/hyperioncoverage
     # Hyperion bands to approximate ALI band values
-    hypBandsNum = np.array([['011','012','013','014','015','016'], 
-                            ['009','010'],
+    hypBandsNum = np.array([['009','010'],
+                            ['011','012','013','014','015','016'],
                             ['018','019','020','021','022','023','024','025'],
                             ['028','029','030','031','032','033'],
                             ['042','043','044','045'],
@@ -496,8 +496,8 @@ def setUpTrain(trainName,availBands,opts={}):
 
     # From http://eo1.usgs.gov/sensors/hyperioncoverage
     # Ordered list of the Hyperion bands to which ALI bands 2-10 correspond.
-    hypBandsNum = np.array([['011','012','013','014','015','016'], 
-                            ['009','010'],
+    hypBandsNum = np.array([['009','010'],
+                            ['011','012','013','014','015','016'],
                             ['018','019','020','021','022','023','024','025'],
                             ['028','029','030','031','032','033'],
                             ['042','043','044','045'],
