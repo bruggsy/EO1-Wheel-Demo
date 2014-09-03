@@ -357,6 +357,8 @@ def aliSolarIrradiance(bands):
     output: modified ALI band reflectances
     """
     # From http://eo1.usgs.gov/faq/question?id=21
+    # Since the labeling is weird, this source establishes the correct ordering:
+    # http://www.sciencedirect.com/science/article/pii/S0034425709000169
     Esun_ali = np.array([1851.8, 1967.6, 1837.2, 1551.47, 1164.53, 957.46, 451.37, 230.03, 79.61])
 
     for key in bands.keys():
