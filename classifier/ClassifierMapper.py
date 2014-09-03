@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-
-'''
+"""
 ABOUT:
 This Python program acts as a Mapper for a Hadoop mapreduce job.
 As input it takes in sequential png files - a binary sequence file containing
@@ -32,18 +31,33 @@ July 2014: Original script (beta).
 USE:
 For use on the Open Science Data Cloud public data commons as a mapper in a Hadoop mapreduce job.
 > python ClassifierMapper.py
-'''
+"""
+
+import sys
+import json
+
+from sklearn import svm
+import numpy as np
+import numpy.ma as ma
+import time
+import gdal,osr,ogr
+
+import binaryhadoop     # Wheel modules
+import utilities
+import geoReference
 
 __author__ = "Jake Bruggemann"
 __version__ = 0.1
 
-# Irradiance correction for Hyperion data - for converting radiance to reflectance
-#
-# bands: dictionary of band radiances
-#
-# output: modified band dictionary
-
 def hypSolarIrradiance(bands):
+    """Correct irradiance for Hyperion data - convert radiance to reflectance.
+
+    bands: dictionary of band radiances
+
+    output: modified band dictionary
+    """
+    # From http://eo1.usgs.gov/documents/hyp_irradiance.txt
+    # Left column is band number, right is spectral irradiance in W/(m^2-um)
     Esun_hyp = np.array([
             [  1.00000000e+00,   9.49370000e+02],
             [  2.00000000e+00,   1.15878000e+03],
@@ -296,15 +310,16 @@ def hypSolarIrradiance(bands):
         bands[key] = value/(Esun_hyp[ind,1]*scale)
     return bands
 
-# Bins Hyperion bands to resemble ALI
-# 
-# bands: dictionary of Hyperion band reflectances
-# numPixels: number of pixels in single image
-# 
-# output: band dictionary of approximate ALI band reflectance information
-
 def binBands(bands,numPixels):
+    """Bin Hyperion bands to resemble ALI.
 
+    bands: dictionary of Hyperion band reflectances
+    numPixels: number of pixels in single image
+
+    output: band dictionary of approximate ALI band reflectance information
+    """
+    # From http://eo1.usgs.gov/sensors/hyperioncoverage
+    # Hyperion bands to approximate ALI band values
     hypBandsNum = np.array([['011','012','013','014','015','016'], 
                             ['009','010'],
                             ['018','019','020','021','022','023','024','025'],
@@ -316,8 +331,8 @@ def binBands(bands,numPixels):
                              '151','152','153','154','155','156','157','158','159','160'],
                             ['193','194','195','196','197','198','199','200','201','202',
                              '203','204','205','206','207','208','209','210','211','212',
-                             '213','214','215','216','217','218','219']])    #Hyperion bands that correspond to approximating ALI band values
-    aliApprox = {}  #New dictionary of band information
+                             '213','214','215','216','217','218','219']])
+    aliApprox = {}  # New dictionary of band information
     for i in np.arange(9):
         aliBand = np.zeros((numPixels,1))
         bandNums = hypBandsNum[i]
@@ -334,13 +349,14 @@ def binBands(bands,numPixels):
             aliApprox[key] = aliBand/count
     return aliApprox
 
-# Solar Irradiance correction for ALI data
-#
-# bands: dictionary of ALI band radiances (rescaled)
-#
-# output: modified ALI band reflectances
-
 def aliSolarIrradiance(bands):
+    """Correct Solar Irradiance for ALI data.
+
+    bands: dictionary of ALI band radiances (rescaled)
+
+    output: modified ALI band reflectances
+    """
+    # From http://eo1.usgs.gov/faq/question?id=21
     Esun_ali = np.array([1851.8, 1967.6, 1837.2, 1551.47, 1164.53, 957.46, 451.37, 230.03, 79.61])
 
     for key in bands.keys():
@@ -349,14 +365,15 @@ def aliSolarIrradiance(bands):
         bands[key] = value/Esun_ali[ind]
     return bands
 
-# Geometric Correction for Hyperion and rescaled ALI radiances for reflectance
-#
-# metadata: L1T metadata dictionary
-# bands: dictionary of band values
-#
-# output: modified band dictionary
-
 def geometricCorrection(metadata,bands):
+    """Perform Geometric Correction for Hyperion and rescale ALI radiances for reflectance
+
+    metadata: L1T metadata dictionary
+    bands: dictionary of band values
+
+    output: modified band dictionary
+    """
+    # From http://eo1.usgs.gov/faq/question?id=21
     earthSunDistance = np.array([[1,.9832], [15,.9836], [32,.9853], [46,.9878], [60,.9909],
                                  [74, .9945], [91, .9993], [106, 1.0033], [121, 1.0076], [135, 1.0109],
                                  [152, 1.0140], [166, 1.0158], [182, 1.0167], [196, 1.0165], [213, 1.0149],
@@ -374,14 +391,14 @@ def geometricCorrection(metadata,bands):
         bands[key] = np.pi * esDist**2 * value / np.sin(sunAngle)    # apply same correction to all bands
     return bands
 
-# Rescale ALI radiance values
-#
-# metadata: L1T metadata dictionary
-# bands: dictionary of ALI band radiances
-#
-# output: modified ALI band dictionary
-
 def rescaleALI(metadata,bands):
+    """Rescale ALI radiance values.
+
+    metadata: L1T metadata dictionary
+    bands: dictionary of ALI band radiances
+
+    output: modified ALI band dictionary
+    """
     radianceScaling = metadata['RADIANCE_SCALING']
     bandScaling = np.zeros((1,len(bands)))
     bandOffset = np.zeros((1,len(bands)))
@@ -398,15 +415,15 @@ def rescaleALI(metadata,bands):
 
     return bands
     
-# Pre processes ALI / Hyperion data to reflectance values, then rearranges dictionary of band values into an Array
-#
-# metadata: L1T metadata dictionary
-# bands: dictionary of band strengths (Radiance)
-# rats: optional Array of ratios to add to SVM training / test data
-# 
-# output: Array of band reflectance values
-
 def preProcess(metadata,bands,rats = None):
+    """Preprocess ALI/Hyperion data to reflectance values, then rearrange dictionary of band values into an Array
+
+    metadata: L1T metadata dictionary
+    bands: dictionary of band strengths (Radiance)
+    rats: optional Array of ratios to add to SVM training / test data
+
+    output: Array of band reflectance values
+    """
     if len(bands) < 11:                      #check if scene is ALI or Hyperion, run relevant corrections to make ALI reflectance bands
         bands = rescaleALI(metadata,bands)
         bands = geometricCorrection(metadata,bands)
@@ -447,17 +464,15 @@ def preProcess(metadata,bands,rats = None):
 
     return bandArray, availBands
 
-# setUpTrain
-#
-# Loads training set and bins Hyperion-based values to resemble ALI band coverage
-#
-# trainName: string file name of training set
-# availBands: list of bands available in training set
-# opts: optional dictionary of options for SVM
-#
-# output: trained svm test
-
 def setUpTrain(trainName,availBands,opts={}):
+    """Load training set and bin Hyperion-based values to resemble ALI band coverage
+
+    trainName: string file name of training set
+    availBands: list of bands available in training set
+    opts: optional dictionary of options for SVM
+
+    output: trained svm test
+    """
     # Set up options, if some weren't set go to defaults
     try:
         svmKern = opts['kern']
@@ -478,8 +493,9 @@ def setUpTrain(trainName,availBands,opts={}):
         bandLine = trainFile.readline()
         bandList = bandLine.rstrip().split(",")
         trainData = np.loadtxt(trainFile,skiprows=1,delimiter=",")
-                
-        
+
+    # From http://eo1.usgs.gov/sensors/hyperioncoverage
+    # Ordered list of the Hyperion bands to which ALI bands 2-10 correspond.
     hypBandsNum = np.array([['011','012','013','014','015','016'], 
                             ['009','010'],
                             ['018','019','020','021','022','023','024','025'],
@@ -519,27 +535,25 @@ def setUpTrain(trainName,availBands,opts={}):
     trainData = None
     return clf
 
-# Runs svm test
-# 
-# clf: trained svm test object
-# bandArray: array of band reflectance values
-#
-# output: numpy array of integers corresponding to classified image
-
 def svmTest(clf,bandArray):
+    """Run svm test.
 
+    clf: trained svm test object
+    bandArray: array of band reflectance values
+
+    output: numpy array of integers corresponding to classified image
+    """
     ans = clf.predict(bandArray)
 
     return ans
 
 
-# main function , runs all preprocessing and testing
-#
-# metadata: L1T metadata dictionary
-# bands: dictionary of band Radiance strengths
-#
-# 
 def main(metadata,bandMask,bands,opts,rats):
+    """Run all preprocessing and testing.
+    
+    metadata: L1T metadata dictionary
+    bands: dictionary of band Radiance strengths
+    """
     try:
         regionName = metadata["originalDirName"]
     except KeyError:
@@ -580,26 +594,9 @@ def main(metadata,bandMask,bands,opts,rats):
 
     print json.dumps(outData)
 
-    pass
-
 
 
 if __name__=="__main__":
-
-    import sys
-    import json
-    
-    from sklearn import svm
-    import numpy as np
-    import numpy.ma as ma
-    import time
-    import gdal,osr,ogr
-
-    import binaryhadoop     # Wheel modules
-    import utilities
-    import geoReference
-
-
     imageData = {}
     imageData["metadata"] = None
 
